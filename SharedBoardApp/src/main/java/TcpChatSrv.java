@@ -45,6 +45,9 @@ public class TcpChatSrv {
         }
     }
 
+    /**
+     * Initializes the list of messages posted by clients.
+     */
     public static void initializeMessageList() {
         // initialize the list with empty strings
         for (int i = 0; i < m; i++) {
@@ -56,7 +59,11 @@ public class TcpChatSrv {
         }
     }
 
-    public static void addText(String text) {
+    /**
+     * Adds a new message to the list of messages posted by clients.
+     * @param text
+     */
+    public static synchronized void addText(String text) {
         if (messageCounter == m * n) {
             updateListSize();
             initializeMessageList(); // Reinitialize the list with the updated size
@@ -74,6 +81,9 @@ public class TcpChatSrv {
         }
     }
 
+    /**
+     * Updates the size of the list of messages posted by clients.
+     */
     public static void updateListSize() {
         int currentSizeN = msgList.size();
         int currentSizeM = msgList.get(0).size();
@@ -99,6 +109,9 @@ public class TcpChatSrv {
         }
     }
 
+    /**
+     * Prints the list of messages posted by clients in lines of 5 elements.
+     */
     public static void printList() {
         for (List<String> row : msgList) {
             for (String text : row) {
@@ -106,6 +119,15 @@ public class TcpChatSrv {
             }
             System.out.println();
         }
+    }
+
+    /**
+     * Returns the list of messages posted by clients.
+     *
+     * @return
+     */
+    public synchronized List<List<String>> getMessages() {
+        return msgList;
     }
 
     /**
@@ -131,6 +153,7 @@ public class TcpChatSrv {
 
 }
 
+// This class handles the communication with a client.
 class ClientConnection implements Runnable {
     private Socket socket; // socket used to exchange data with the client
     private DataInputStream sIn; // input stream
@@ -215,3 +238,4 @@ class ClientConnection implements Runnable {
         }
     }
 }
+
