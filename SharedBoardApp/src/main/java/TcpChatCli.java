@@ -36,7 +36,7 @@ class TcpChatCli {
         DataOutputStream sOut = new DataOutputStream(sock.getOutputStream());
 
         // Start a thread to read incoming messages from the server
-        Thread serverConn = new Thread(new SBPClientConnection(sock));
+        Thread serverConn = new Thread(new SBPClientConnection(sock, sOut));
         serverConn.start();
 
         // Send COMMTEST request to start a session
@@ -57,6 +57,7 @@ class TcpChatCli {
             } else if (input.equals("SharedBoard")) {
                 SBPMessage getSharedBoard = new SBPMessage(1, 6, 0, null); // CODE 6 for the SharedBoard
                 sOut.write(getSharedBoard.serialize());
+                sOut.flush();
             } else {
                 System.out.print("Sending message to server ");
                 String text = "(" + nickName + ")" + " " + input;
@@ -77,9 +78,11 @@ class TcpChatCli {
 class SBPClientConnection implements Runnable {
     private Socket socket;
     private DataInputStream sIn;
+    private DataOutputStream sOut;
 
-    public SBPClientConnection(Socket tcp_s) {
+    public SBPClientConnection(Socket tcp_s, DataOutputStream sOut) {
         socket = tcp_s; // initialize socket
+        this.sOut = sOut;
     }
 
     public void run() {
@@ -93,7 +96,7 @@ class SBPClientConnection implements Runnable {
 
 
                 int code = header[1]; // get the code
-                int dataLength = (header[2] << 8) | header[3]; // get the data length
+                int dataLength = ((header[2] & 0xFF) << 8) | (header[3] & 0xFF);// get the data length
 
                 byte[] data = new byte[dataLength]; // create a byte array for the data
                 sIn.read(data, 0, dataLength); // read the data
